@@ -1,16 +1,21 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "robertofilho0/laravel-sanctum-auth",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "API REST de notas escolares com Laravel 12, Sanctum, Form Requests, API Resources, Policies e testes",
+    "keywords": [
+        "laravel",
+        "sanctum",
+        "api",
+        "rest",
+        "phpunit"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.1",
-        "laravel/tinker": "^2.10.1",
-        "tymon/jwt-auth": "^2.2"
+        "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -56,6 +61,12 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"
+        ],
+        "lint": [
+            "pint --test"
+        ],
+        "format": [
+            "pint"
         ]
     },
     "extra": {

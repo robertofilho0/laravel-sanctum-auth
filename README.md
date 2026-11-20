@@ -1,61 +1,140 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📚 Notas API · Laravel + Sanctum
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![CI](https://github.com/robertofilho0/laravel-sanctum-auth/actions/workflows/ci.yml/badge.svg)](https://github.com/robertofilho0/laravel-sanctum-auth/actions/workflows/ci.yml)
+![PHP](https://img.shields.io/badge/php-8.3%20%7C%208.4-777BB4?logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/laravel-12-FF2D20?logo=laravel&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## About Laravel
+API REST em **Laravel 12** para gestão de alunos e notas do 2º e 3º ano, com autenticação por token via **Laravel Sanctum**. Professores lançam notas por bimestre, a média ponderada é calculada pela aplicação, e há boletim por aluno e relatório da turma.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ✨ Funcionalidades
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Autenticação com Sanctum**: login com token de acesso (com expiração), `me`, logout e logout de todos os dispositivos
+- **Proteção contra força bruta**: rate limit de 5 tentativas por minuto por e-mail + IP
+- **Perfis**: professor (gerencia alunos e notas) e **admin** (gerencia usuários) via Gate
+- **Alunos**: CRUD com filtros por série, busca por nome/matrícula e paginação
+- **Notas por bimestre**: uma por aluno em cada bimestre, com **média ponderada calculada no model** (parcial × 1 + bimestral × 2) / 3
+- **Boletim** com os 4 bimestres, média geral e situação
+- **Relatório da turma**: média, maior e menor nota, aprovados e abaixo da média, com filtros por série e bimestre
+- Boas práticas do Laravel: **Form Requests**, **API Resources**, **Route Model Binding**, rotas aninhadas *shallow*, **Factories** e **Seeders**
+- Respostas de erro sempre em JSON nas rotas `/api/*`
+- **Testes** com PHPUnit (unitários e de feature), **Laravel Pint** e **CI** em PHP 8.3 e 8.4, com um job que roda as migrations num **MySQL 8**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🧱 Stack
 
-## Learning Laravel
+PHP 8.3+ · Laravel 12 · Sanctum 4 · MySQL 8 ou SQLite · PHPUnit 11 · Pint · Docker
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## 📁 Estrutura
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```
+app/
+├── Http/
+│   ├── Controllers/Api/   # Auth, Aluno, Nota, Relatorio e User
+│   ├── Requests/          # validação (LoginRequest, AlunoRequest, NotaRequest, StoreUserRequest)
+│   └── Resources/         # formatação das respostas
+├── Models/                # User, Aluno e Nota (cálculo da média no evento saving)
+└── Providers/AppServiceProvider.php   # Gate de admin e rate limiters
+config/escola.php          # média de aprovação
+database/
+├── factories/ migrations/ seeders/
+routes/api.php
+tests/
+├── Feature/               # Auth, Aluno, Nota e UserAdmin
+└── Unit/                  # cálculo da média
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🚀 Como rodar
 
-## Laravel Sponsors
+### Localmente (SQLite, sem instalar banco)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+git clone https://github.com/robertofilho0/laravel-sanctum-auth.git
+cd laravel-sanctum-auth
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate --seed
+php artisan serve
+```
 
-### Premium Partners
+### Com Docker (MySQL)
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+export APP_KEY=$(php artisan key:generate --show)   # ou gere em qualquer projeto Laravel
+docker compose up --build
+docker compose exec app php artisan db:seed
+```
 
-## Contributing
+A API fica disponível em `http://localhost:8000/api`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Usuários do seed** (senha `Senha123`): `admin@escola.com` (admin) e `beth@escola.com` (professora).
 
-## Code of Conduct
+## 📚 Endpoints
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Todas as rotas, exceto `/login`, exigem `Authorization: Bearer <token>`.
 
-## Security Vulnerabilities
+| Método   | Rota                           | Descrição                                   |
+| -------- | ------------------------------ | ------------------------------------------- |
+| `POST`   | `/api/login`                   | Gera o token de acesso                      |
+| `GET`    | `/api/me`                      | Usuário autenticado                         |
+| `POST`   | `/api/logout`                  | Revoga o token atual                        |
+| `POST`   | `/api/logout-all`              | Revoga todos os tokens do usuário           |
+| `GET`    | `/api/users`                   | Lista usuários (admin)                      |
+| `POST`   | `/api/users`                   | Cria professor/admin (admin)                |
+| `DELETE` | `/api/users/{id}`              | Remove usuário (admin)                      |
+| `GET`    | `/api/alunos`                  | Lista (`serie`, `busca`, `per_page`)        |
+| `POST`   | `/api/alunos`                  | Cadastra aluno                              |
+| `GET`    | `/api/alunos/{id}`             | Detalhes com notas                          |
+| `PUT`    | `/api/alunos/{id}`             | Atualiza aluno                              |
+| `DELETE` | `/api/alunos/{id}`             | Remove aluno e notas                        |
+| `GET`    | `/api/alunos/{id}/boletim`     | Boletim do aluno                            |
+| `GET`    | `/api/alunos/{id}/notas`       | Notas do aluno                              |
+| `POST`   | `/api/alunos/{id}/notas`       | Lança nota do bimestre                      |
+| `PUT`    | `/api/notas/{id}`              | Atualiza nota (recalcula a média)           |
+| `DELETE` | `/api/notas/{id}`              | Remove nota                                 |
+| `GET`    | `/api/relatorios/turma`        | Estatísticas (`serie`, `bimestre`)          |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Exemplos
 
-## License
+```bash
+# Login
+curl -X POST http://localhost:8000/api/login -H "Accept: application/json" \
+  -d email=beth@escola.com -d password=Senha123
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Lançar nota
+curl -X POST http://localhost:8000/api/alunos/1/notas \
+  -H "Authorization: Bearer <TOKEN>" -H "Accept: application/json" \
+  -d bimestre=1 -d nota_parcial=8 -d nota_bimestral=9
+```
+
+```json
+{
+  "data": {
+    "id": 1,
+    "aluno_id": 1,
+    "bimestre": 1,
+    "nota_parcial": 8,
+    "nota_bimestral": 9,
+    "media": 8.67,
+    "situacao": "aprovado",
+    "lancada_por": "Professora Beth"
+  }
+}
+```
+
+## 🧪 Testes e qualidade
+
+```bash
+composer test          # PHPUnit (SQLite em memória)
+composer lint          # Laravel Pint em modo verificação
+composer format        # aplica o Pint
+```
+
+## 📄 Licença
+
+MIT.
+
+---
+
+Feito por [Roberto Filho](https://github.com/robertofilho0) · [LinkedIn](https://www.linkedin.com/in/roberto-filho-393b372b2/)
